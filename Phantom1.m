@@ -129,7 +129,7 @@ set(findobj('Tag','endTRtext'),'String',num2str(size(handles.data,4)))% Update h
 % end
 set(findobj('Tag','fileNameText'),'String',fn)% Update handles structure
 
-handles.volume = sq(handles.data(:,:,handles.sliceNum,:));
+handles.volume = squeeze(handles.data(:,:,handles.sliceNum,:));
 axes(handles.imageAxis)
 handles.image = squeeze(handles.volume(:,:, 1));
 imshow(handles.image,[0 max(max(squeeze(handles.volume(:,:,1))))]);
