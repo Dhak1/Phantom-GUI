@@ -1,7 +1,7 @@
 function [image, m ,handles] = imOption(handles)
 % Update displayed image when Slider/Slice# is updated #stg#
 currChoice = handles.currChoice;
-handles = switchDetFilt(handles); %% #stg# problem!
+%handles = switchDetFilt(handles); %% #stg# problem!
 volume = handles.volume; 
 slice = handles.sliceNum;
 w = size(handles.data, 1);
