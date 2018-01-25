@@ -114,7 +114,7 @@ set(findobj('Tag','sliceSlider'), 'SliderStep', [1/handles.slices, 10/handles.sl
 set(findobj('Tag','sliceSlider'),'value',handles.sliceNum);
 handles.trimmed = 0;
 handles.startSlice = 1;
-handles.endSlice = handles.slices;
+handles.endSlice = handles.slices;  
 
 set(findobj('Tag','startSlice'),'String','1')% Update handles structure
 set(findobj('Tag','endSlice'),'String',handles.slices)% Update handles structure
