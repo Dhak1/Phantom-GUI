@@ -12,7 +12,7 @@ if handles.mO ==1
     hold on
     numMasks = size(handles.mask,3);
     if numMasks>size(handles.mOcolors,1)
-        handles.mOcolors = repmat(handles.mOcolors,ceil(numMasks/size(handles.mOcolors,1)),1)
+        handles.mOcolors = repmat(handles.mOcolors,ceil(numMasks/size(handles.mOcolors,1)),1);
     end
     for iMask = 1:numMasks
 %         handles.maskLegend{iMask} = ['Mask #: ' num2str(iMask)];
@@ -32,7 +32,7 @@ if handles.mO ==1
 else
     axes(handles.imageAxis);
     cla
-    imshow(image,[0 max(max(squeeze(handles.volume(:,:,1))))])
+    imshow(image,[0 max(max(squeeze(handles.volume(:,:,handles.sliceNum))))])
 end
 
 end
