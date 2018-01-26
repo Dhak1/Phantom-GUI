@@ -104,29 +104,9 @@ function loadImBut_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 axes(handles.imageAxis)
 set(findobj('Tag','statusText'),'String','Loading Data...')% Update handles structure
-[handles.data, cwd, name,fn] = loadPhanIm(handles);
-handles.slices = size(handles.data,3);
-handles.sliceNum = round(handles.slices/2);
-set(findobj('Tag','sliceText'),'String',num2str(handles.sliceNum));% Update handles structure
-set(findobj('Tag','sliceSlider'),'Max',handles.slices);
-set(findobj('Tag','sliceSlider'),'Min',1);
-set(findobj('Tag','sliceSlider'), 'SliderStep', [1/handles.slices, 10/handles.slices]);
-set(findobj('Tag','sliceSlider'),'value',handles.sliceNum);
-handles.trimmed = 0;
-handles.startSlice = 1;
-handles.endSlice = handles.slices;  
+[handles.volume, cwd, name,fn] = loadPhanIm;
+handles = updatePhanIm( handles ,1);
 
-set(findobj('Tag','startSlice'),'String','1')% Update handles structure
-set(findobj('Tag','endSlice'),'String',handles.slices)% Update handles structure
-set(findobj('Tag','currentSlice'),'String',handles.sliceNum)% Update handles structure
-set(findobj('Tag','statusText'),'String','Loaded!')% Update handles structure
-set(findobj('Tag','dataName'),'String',name)% Update handles structure
-set(findobj('Tag','startTRtext'),'String',num2str(1))% Update handles structure
-set(findobj('Tag','endTRtext'),'String',num2str(size(handles.data,4)))% Update handles structure
-
-% if length(fn) > 20
-%     fn = fn(end-20:end);
-% end
 set(findobj('Tag','fileNameText'),'String',fn)% Update handles structure
 
 handles.volume = squeeze(handles.data(:,:,handles.sliceNum,:));
@@ -484,6 +464,27 @@ handles = sliderHelper(handles);
 
 guidata(hObject, handles);
 
+% --- Executes on button press in generateROI.
+function generateROI_Callback(hObject, eventdata, handles)
+% hObject    handle to drawROI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.graph = 1;
+
+axes(handles.imageAxis)
+% handles.mO = 0;
+% maskOverlay(handles);
+try
+    handles = rmfield(handles, 'mask');
+end
+
+handles = sliderHelper(handles);
+% handles.mO = 1;
+% set(findobj('tag','maskOverlay'),'Value',1)
+% maskOverlay(handles);
+
+guidata(hObject, handles);
+
 function endSlice_Callback(hObject, eventdata, handles)
 % hObject    handle to endslice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -601,6 +602,7 @@ set(findobj('Tag','IntTog'),'Value', 0);
 handles.show = 0;
 handles.graph = 0;
 guidata(hObject,handles);
+
 
 function startTRtext_Callback(hObject, eventdata, handles)
 % hObject    handle to startTRtext (see GCBO)
