@@ -166,7 +166,27 @@ pause(0.01);
 close
 
 
+% --- Executes on button press in T2tool.
+function T2tool_Callback(hObject, eventdata, handles)
+% hObject    handle to T2tool (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+%T2tool2(handles);
 
+set(findobj('Tag','statusText'),'String','Loading Data...')% Update handles structure
+[handles.T2Vol, handles.dataName, handles.fileNameText] = loadPhanIm;
+
+T2VolSize = size(handles.T2Vol);
+tesNum = num2str(T2VolSize(1,4));
+% if exist([fn '_map_segments.mat'])
+%     load([fn '_map_segments.mat'])
+% end
+[ betas ] = calcT2beta( handles.T2Vol );
+handles.volume = betas;
+%handles.volume = handles.T2Map(:,:,:,2);
+[handles] = updatePhanIm( handles);
+
+guidata(hObject, handles);
 
 
 
@@ -177,7 +197,7 @@ function exploreIm_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 set(findobj('Tag','statusText'),'String','Loading Data...')% Update handles structure
 [handles.volume, handles.dataName, handles.fileNameText] = loadPhanIm;
-[handles] = updatePhanIm( handles,1);
+[handles] = updatePhanIm( handles);
 
 
 %a = dir('*.csv');
@@ -190,6 +210,7 @@ handles.fT = 0;
 handles.dT = 0;
 set(findobj('Tag','filterToggle'),'Value', 0);
 set(findobj('Tag','detrendTog'),'Value', 0);
+handles.volume = handles.volume(:,:,handles.sliceNum,:);
 guidata(hObject, handles);
 
 % --- Executes on button press in compSD.
@@ -269,7 +290,7 @@ handles.dT = dT;
 
 
 if dT == 0
-    handles.volume = squeeze(handles.data(:,:,handles.sliceNum,:));
+    handles.volume = sq(handles.data(:,:,handles.sliceNum,:));
     if handles.graph == 1
         handles = sliderHelper(handles);
     end
@@ -866,27 +887,6 @@ end
 guidata(hObject, handles);
 
 
-% --- Executes on button press in T2tool.
-function T2tool_Callback(hObject, eventdata, handles)
-% hObject    handle to T2tool (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-%T2tool2(handles);
-
-set(findobj('Tag','statusText'),'String','Loading Data...')% Update handles structure
-[handles.T2Vol, handles.dataName, handles.fileNameText] = loadPhanIm;
-
-T2VolSize = size(handles.T2Vol);
-tesNum = num2str(T2VolSize(1,4));
-% if exist([fn '_map_segments.mat'])
-%     load([fn '_map_segments.mat'])
-% end
-[ betas ] = calcT2beta( handles.T2Vol );
-handles.volume = betas;
-[handles] = updatePhanIm( handles,1);
-
-guidata(hObject, handles);
-
 % --- Executes on button press in T2Load.
 function T2Load_Callback(hObject, eventdata, handles)
 % hObject    handle to T2Load (see GCBO)
@@ -915,7 +915,7 @@ if sizeTEs(1,2) == T2VolSize(1,4)
     %         save([fn '_map_segments.mat'],'T2Map','TEs')
     %     end
     
-%     prompt = {'Enter the number of quadrants expected:'};
+    prompt = {'Enter the number of quadrants expected:'};
     %     quadrantNum = inputdlg(prompt);
     %     quadrantNum = quadrantNum{1};
     %     quadrantNum = squeeze(quadrantNum);
@@ -923,14 +923,9 @@ if sizeTEs(1,2) == T2VolSize(1,4)
     curSlice = str2num(handles.currentSlice.String);
     
     %[angDeg,t2star_s,center,radius] = registerSpokesT2s( T2Map , curSlice);
-    [t2star_s,cross_mask,angDeg] = registerSpokesT2s( T2Map , curSlice);
-    handles.T2Map = t2star_s;
-    handles.volume = t2star_s;
+    [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( T2Map , curSlice);
     handles.crossAngleDeg=angDeg;
     handles.mask=cross_mask;
-    handles.mO=1;
-   [handles] = updatePhanIm( handles,0);
-    maskOverlay(handles);
     
     
     set(findobj('Tag','statusText'),'String','T2 Star Complete')

@@ -55,12 +55,12 @@ function T2tool2_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for T2tool2
 handles.output = hObject;
 
-
+sliceNum=0;
 try
     sliceNum = varargin{1,1}.sliceNum;
 end
 
-if(isempty(sliceNum) == 1)
+if(~sliceNum)
     sliceNum = 7;
 end
 
