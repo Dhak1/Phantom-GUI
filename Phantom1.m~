@@ -492,12 +492,15 @@ end
 % finder center of cartridge
 image2D=handles.volume(:,:,1);
 radiiRange=[5 15];
-[innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(image2D, radiiRange);
+sliceRange=handles.rangeNum;
+for i=1:size(sliceRange,2)
+[~, ~, center(i,:), radius(i,1)] = gen3_get_i_cylinder(handles.data(:,:,sliceRange(i),1), radiiRange);
+end
 % create masks and center them
 s=floor(size(image2D)/2);
 AnguarIdent=pi*0.15;
 decentering=[-0.5 -0.5];
-
+image2D = 
 [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(image2D,4,[radius,s([2 1])],AnguarIdent);
 %% align masks to cartridge
 
@@ -732,7 +735,7 @@ function IntTog_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of IntTog
-handles.showCoordinates = (-1*get(hObject,'Value'))+1;
+handles.show = (-1*get(hObject,'Value'))+1;
 handles = showIntHelper(handles);
 guidata(hObject,handles);
 

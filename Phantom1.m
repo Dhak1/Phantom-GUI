@@ -492,7 +492,9 @@ end
 % finder center of cartridge
 image2D=handles.volume(:,:,1);
 radiiRange=[5 15];
-[innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(image2D, radiiRange);
+
+[~, ~, center, radius] = gen3_get_i_cylinder(handles.data(:,:,handles.sliceNum,1), radiiRange);
+
 % create masks and center them
 s=floor(size(image2D)/2);
 AnguarIdent=pi*0.15;
@@ -511,7 +513,7 @@ for ii=1:4
 %     if CreateMapFlag
 %         im2(:,:,ii) = mask_weights.*im2(:,:,ii);
 %     end
-    %im2(:,:,ii)=im2(:,:,ii)./sum(sum(im2(:,:,ii)));
+%   im2(:,:,ii)=im2(:,:,ii)./sum(sum(im2(:,:,ii)));
 end
 handles.mask = cat(3,im2 ,masks_oc);
 handles.graph = 1;
@@ -519,6 +521,12 @@ numMasks = size(handles.mask,3);
 for iMask = 1:numMasks
     handles.maskLegend{iMask} = ['Mask' num2str(iMask)];
 end
+
+%clear current mask
+handles.mO = 0;
+maskOverlay(handles);
+
+% overlay new mask
 handles.mO = 1;
 set(findobj('tag','maskOverlay'),'Value',1)
 maskOverlay(handles);
