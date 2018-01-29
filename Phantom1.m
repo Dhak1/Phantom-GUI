@@ -74,6 +74,7 @@ handles.trimmed = 0;
 handles.corr = 0;
 handles.tSNRbut = 0;
 handles.SFSbut = 0;
+handles.isCoordsData=0; % is there coordiantes data
 handles.mOcolors = [1 0 0; 0 1 0; 0 0 1; 1 0.5 0];%[1 0 0; 0 1 0; 0 0 1; 1 0.6 0; 1 0 1; 0 1 1; 1 1 1]; %Mask overlay colors
 set(findobj('Tag','rangeText'),'String',num2str(handles.rangeNum));% Update handles structure
 
@@ -113,22 +114,31 @@ handles.volume = squeeze(handles.data(:,:,handles.sliceNum,:));
 axes(handles.imageAxis)
 handles.image = squeeze(handles.volume(:,:, 1));
 imshow(handles.image,[0 max(max(squeeze(handles.volume(:,:,1))))]);
-a = dir([cwd ,'*.csv']);
-handles.ints = csvread([cwd, a.name],1);
-handles.intsraw = handles.ints;
-handles.dataName = name;
-handles.startTR = 1;
-handles.endTR = size(handles.data,4);
-handles.trimState = 1;
-handles.fT = 0;
-handles.dT = 0;
-handles.corr = 0;
-handles.tSNRbut = 0;
-handles.SFSbut = 0;
-handles.mO=0;
-handles.graph = 0;
-set(findobj('Tag','filterToggle'),'Value', 0);
-set(findobj('Tag','detrendTog'),'Value', 0);
+[~,scanname,~] = fileparts(fn)
+%a = dir([cwd ,'*.csv']);
+
+if exist([cwd, scanname , '.csv'],'file')
+    handles.isCoordsData=1;
+    handles.ints = csvread([cwd, scanname , '.csv'],1);
+    handles.intsraw = handles.ints;
+    handles.dataName = name;
+    handles.startTR = 1;
+    handles.endTR = size(handles.data,4);
+    handles.trimState = 1;
+    handles.fT = 0;
+    handles.dT = 0;
+    handles.corr = 0;
+    handles.tSNRbut = 0;
+    handles.SFSbut = 0;
+    handles.mO=0;
+    handles.graph = 0;
+    set(findobj('Tag','filterToggle'),'Value', 0);
+    set(findobj('Tag','detrendTog'),'Value', 0);
+    set(findobj('Tag','statusText'),'String','Loaded file and coordinates')% Update handles structure
+else
+    handles.isCoordsData=0;
+    set(findobj('Tag','statusText'),'String','No coordiantes data')% Update handles structure
+end
 guidata(hObject, handles);
 
 
@@ -478,10 +488,43 @@ try
     handles = rmfield(handles, 'mask');
 end
 
+% create mask for the current slice 
+% finder center of cartridge
+image2D=handles.volume(:,:,1);
+radiiRange=[5 15];
+[innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(image2D, radiiRange);
+% create masks and center them
+s=floor(size(image2D)/2);
+AnguarIdent=pi*0.15;
+decentering=[-0.5 -0.5];
+
+[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(image2D,4,[radius,s([2 1])],AnguarIdent);
+%% align masks to cartridge
+
+masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
+im1=zeros(size(masks));
+im2=zeros(size(masks));
+for ii=1:4
+    im=masks(:,:,ii);
+    im1(:,:,ii)=imrotate(im,handles.maskAngleDeg,'nearest','crop');
+    im2(:,:,ii)=imtranslate(im1(:,:,ii),center-[s(2) s(1)]+decentering);
+%     if CreateMapFlag
+%         im2(:,:,ii) = mask_weights.*im2(:,:,ii);
+%     end
+    %im2(:,:,ii)=im2(:,:,ii)./sum(sum(im2(:,:,ii)));
+end
+handles.mask = cat(3,im2 ,masks_oc);
+handles.graph = 1;
+numMasks = size(handles.mask,3);
+for iMask = 1:numMasks
+    handles.maskLegend{iMask} = ['Mask' num2str(iMask)];
+end
+handles.mO = 1;
+set(findobj('tag','maskOverlay'),'Value',1)
+maskOverlay(handles);
+
 handles = sliderHelper(handles);
-% handles.mO = 1;
-% set(findobj('tag','maskOverlay'),'Value',1)
-% maskOverlay(handles);
+
 
 guidata(hObject, handles);
 
@@ -928,7 +971,7 @@ if sizeTEs(1,2) == T2VolSize(1,4)
     [t2star_s,cross_mask,angDeg] = registerSpokesT2s( T2Map , curSlice);
     handles.T2Map = t2star_s;
     handles.volume = t2star_s;
-    handles.crossAngleDeg=angDeg;
+    handles.maskAngleDeg=angDeg+45;
     handles.mask=cross_mask;
     handles.mO=1;
    [handles] = updatePhanIm( handles,0);
