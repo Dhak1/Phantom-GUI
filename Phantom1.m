@@ -182,6 +182,13 @@ set(findobj('Tag','filterToggle'),'Value', 0);
 set(findobj('Tag','detrendTog'),'Value', 0);
 guidata(hObject, handles);
 
+function convertIm_Callback(hObject, eventdata, handles)
+% this function uses dcim2nii code to convert dicom files to 4d nifti files
+directoryname = uigetdir('.','please choose directory containing dicm files');
+dicm2nii(directoryname, '\niiFolder', '.nii')
+set(findobj('Tag','statusText'),'String',['Files have been converted']);
+guidata(hObject, handles);
+
 % --- Executes on button press in compSD.
 function compSD_Callback(hObject, eventdata, handles)
 % hObject    handle to compSD (see GCBO)
