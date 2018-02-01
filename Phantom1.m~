@@ -182,6 +182,14 @@ set(findobj('Tag','filterToggle'),'Value', 0);
 set(findobj('Tag','detrendTog'),'Value', 0);
 guidata(hObject, handles);
 
+function convertIm_Callback(hObject, eventdata, handles)
+% this function uses dcim2nii code to convert dicom files to 4d nifti files
+directoryname = uigetdir('.','please choose directory containing dicm files');
+dicm2nii(directoryname, fullfile(directoryname , 'niiFolder'), '.nii')
+set(findobj('Tag','statusText'),'String','Files have been writen into niiFolder');
+cd(directoryname);
+guidata(hObject, handles);
+
 % --- Executes on button press in compSD.
 function compSD_Callback(hObject, eventdata, handles)
 % hObject    handle to compSD (see GCBO)
@@ -492,15 +500,14 @@ end
 % finder center of cartridge
 image2D=handles.volume(:,:,1);
 radiiRange=[5 15];
-sliceRange=handles.rangeNum;
-for i=1:size(sliceRange,2)
-[~, ~, center(i,:), radius(i,1)] = gen3_get_i_cylinder(handles.data(:,:,sliceRange(i),1), radiiRange);
-end
+
+[~, ~, center, radius] = gen3_get_i_cylinder(handles.data(:,:,handles.sliceNum,1), radiiRange);
+
 % create masks and center them
 s=floor(size(image2D)/2);
 AnguarIdent=pi*0.15;
 decentering=[-0.5 -0.5];
-image2D = 
+
 [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(image2D,4,[radius,s([2 1])],AnguarIdent);
 %% align masks to cartridge
 
@@ -514,7 +521,7 @@ for ii=1:4
 %     if CreateMapFlag
 %         im2(:,:,ii) = mask_weights.*im2(:,:,ii);
 %     end
-    %im2(:,:,ii)=im2(:,:,ii)./sum(sum(im2(:,:,ii)));
+%   im2(:,:,ii)=im2(:,:,ii)./sum(sum(im2(:,:,ii)));
 end
 handles.mask = cat(3,im2 ,masks_oc);
 handles.graph = 1;
@@ -522,6 +529,12 @@ numMasks = size(handles.mask,3);
 for iMask = 1:numMasks
     handles.maskLegend{iMask} = ['Mask' num2str(iMask)];
 end
+
+%clear current mask
+handles.mO = 0;
+maskOverlay(handles);
+
+% overlay new mask
 handles.mO = 1;
 set(findobj('tag','maskOverlay'),'Value',1)
 maskOverlay(handles);
@@ -582,6 +595,31 @@ function dynFidelity_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % handles.corr = get(hObject,'Value')
 % handles = quadCorrelation(handles);
+maskAngle = handles.maskAngleDeg;
+sliceRange=handles.rangeNum;
+l=length(sliceRange);
+tempFiltFlag=0;
+imgData=handles.data;
+
+
+h = waitbar(0,'','Name','','CreateCancelBtn',...
+            'setappdata(gcbf,''canceling'',1)');
+setappdata(h,'canceling',0)
+
+
+for ii=1:l
+    
+    if getappdata(h,'canceling')
+        delete(h)
+        break
+    end
+    % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
+    [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:), st2star(ii,:)] =getStatBold3(imgData(:,:,sliceRange(ii),:),maskAngle,0,3,tempFiltFlag,[-0.5 -0.5],pi*0.15);
+    waitbar(ii/l,h,sprintf('%.1f %%',ii/l*100))
+end
+delete(h)
+
+
 guidata(hObject, handles);
 
 % --- Executes on slider movement.

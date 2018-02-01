@@ -185,8 +185,9 @@ guidata(hObject, handles);
 function convertIm_Callback(hObject, eventdata, handles)
 % this function uses dcim2nii code to convert dicom files to 4d nifti files
 directoryname = uigetdir('.','please choose directory containing dicm files');
-dicm2nii(directoryname, '\niiFolder', '.nii')
-set(findobj('Tag','statusText'),'String',['Files have been converted']);
+dicm2nii(directoryname, fullfile(directoryname , 'niiFolder'), '.nii')
+set(findobj('Tag','statusText'),'String','Files have been writen into niiFolder');
+cd(directoryname);
 guidata(hObject, handles);
 
 % --- Executes on button press in compSD.
@@ -594,6 +595,38 @@ function dynFidelity_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % handles.corr = get(hObject,'Value')
 % handles = quadCorrelation(handles);
+maskAngle = handles.maskAngleDeg;
+sliceRange=handles.rangeNum;
+l=length(sliceRange);
+tempFiltFlag=0;
+imgData=handles.data;
+
+
+h = waitbar(0,'','Name','','CreateCancelBtn',...
+            'setappdata(gcbf,''canceling'',1)');
+setappdata(h,'canceling',0)
+
+
+for ii=1:l
+    
+    if getappdata(h,'canceling')
+        break
+    end
+    % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
+    [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:), st2star(ii,:)] =getStatBold3(imgData(:,:,sliceRange(ii),:),maskAngle,0,3,tempFiltFlag,[-0.5 -0.5],pi*0.15);
+    waitbar(ii/l,h,sprintf('%.1f %%',ii/l*100))
+end
+
+if ~getappdata(h,'canceling')
+    handles.Results.DynFidelity.sfs = sfs;
+    handles.Results.DynFidelity.mnts = mt2star;
+    handles.Results.DynFidelity.tsnr = tsnr;
+    handles.Results.DynFidelity.st2star = st2star;
+end
+
+delete(h);
+
+handles = sliderHelper(handles);
 guidata(hObject, handles);
 
 % --- Executes on slider movement.
@@ -983,10 +1016,19 @@ if sizeTEs(1,2) == T2VolSize(1,4)
     curSlice = str2num(handles.currentSlice.String);
     
     %[angDeg,t2star_s,center,radius] = registerSpokesT2s( T2Map , curSlice);
+    
+    %% caculate angle correction factor
+    resetVal=85;
+    da=(resetVal - 64)*360/512;
+
+    
     [t2star_s,cross_mask,angDeg] = registerSpokesT2s( T2Map , curSlice);
     handles.T2Map = t2star_s;
     handles.volume = t2star_s;
-    handles.maskAngleDeg=angDeg+45;
+    
+    
+    handles.maskAngleDeg=angDeg+45-da;
+
     handles.mask=cross_mask;
     handles.mO=1;
    [handles] = updatePhanIm( handles,0);

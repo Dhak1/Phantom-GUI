@@ -13,29 +13,33 @@ switch handles.currChoice
         return
 end
 
+minmt=mean(min(handles.mnts));
+maxmt=mean(max(handles.mnts));
+curPos=handles.ints(:,2);
+boldExpexcted=reverseSeq(curPos,[minmt maxmt],0);
+showFlag = handles.show;
 
-
-i = handles.show;
-
-if i == 0
-    smnt=std(handles.mnts);
-    mmnt=mean(handles.mnts);
+if showFlag == 0
+    %smnt=std(handles.mnts);
+    %mmnt=mean(handles.mnts);
     
    % int = (handles.ints(:,2))*std(handles.mnts)+mean(handles.mnts(handles.ints(:,2) == 0));
-    int = (handles.ints(:,2)-64)*smnt+mmnt;
-    if handles.graph == 1
-        r = corrcoef(smooth(smooth(int)), handles.mnts);
-        r = r(2);
-        if r < 0
-            %int = (-handles.ints(:,2)*std(handles.mnts))+mean(handles.mnts(handles.ints(:,2) == 0));
-            int = -(handles.ints(:,2)-64)*smnt+mmnt;
-                
-        end
+   % int = (handles.ints(:,2)-64)*smnt+mmnt;
+   if handles.graph == 1
+       for ii=1:4
+           rr = corrcoef(boldExpexcted, handles.mnts(:,ii));
+           r(ii) = rr(2);
+       end
+%         if r < 0
+%             %int = (-handles.ints(:,2)*std(handles.mnts))+mean(handles.mnts(handles.ints(:,2) == 0));
+%             %int = -(handles.ints(:,2)-64)*smnt+mmnt;
+%                 
+%         end
     end
 
     axes(handles.graphAxis);
     hold on;
-    plot(smooth(smooth(int)),'-')
+    plot(boldExpexcted,'-')
     hold off;
     if handles.graph == 1
         
