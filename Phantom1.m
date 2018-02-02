@@ -626,6 +626,8 @@ end
 
 delete(h);
 
+handles = dynFidelityCorrelation(handles);
+
 handles = sliderHelper(handles);
 guidata(hObject, handles);
 
