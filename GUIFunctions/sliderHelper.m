@@ -58,9 +58,9 @@ if length(mnts)>1
     % title(['Coordinates X: ', num2str(handles.coor(1)), ' Y: ' , num2str(handles.coor(2))])
     handles.mnts = mnts;
     handles.mask = mask;
-    handles = quadCorrelation(handles);
-    handles = tSNR(handles);
-    handles = sfs(handles);
+%     handles = quadCorrelation(handles);
+%     handles = tSNR(handles);
+%     handles = sfs(handles);
     handles = showIntHelper(handles);
 else
     axes(handles.graphAxis);cla;

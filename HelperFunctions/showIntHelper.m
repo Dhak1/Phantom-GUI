@@ -46,8 +46,9 @@ if showFlag == 0
         set(findobj('Tag','corrInt'),'String',['Correlation: ',num2str(round((r)*10000)/10000)]);
     end
 else
+        axes(handles.graphAxis)
     cla;
-    axes(handles.graphAxis)
+
     if  handles.graph == 1
         handles.curGrap = plot(handles.mnts);
         try

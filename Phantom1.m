@@ -601,30 +601,56 @@ l=length(sliceRange);
 tempFiltFlag=0;
 imgData=handles.data;
 
+try
+    res = handles.Results.DynFidelity;
+end
 
-h = waitbar(0,'','Name','','CreateCancelBtn',...
-            'setappdata(gcbf,''canceling'',1)');
-setappdata(h,'canceling',0)
-
-
-for ii=1:l
+if ~exist('res','var')
     
-    if getappdata(h,'canceling')
-        break
+    h = waitbar(0,'','Name','','CreateCancelBtn',...
+        'setappdata(gcbf,''canceling'',1)');
+    setappdata(h,'canceling',0)
+    
+    
+    for ii=1:l
+        
+        if getappdata(h,'canceling')
+            break
+        end
+        % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
+        [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:), st2star(ii,:)] =getStatBold3(imgData(:,:,sliceRange(ii),:),maskAngle,0,3,tempFiltFlag,[-0.5 -0.5],pi*0.15);
+        waitbar(ii/l,h,sprintf('%.1f %%',ii/l*100))
     end
-    % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
-    [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:), st2star(ii,:)] =getStatBold3(imgData(:,:,sliceRange(ii),:),maskAngle,0,3,tempFiltFlag,[-0.5 -0.5],pi*0.15);
-    waitbar(ii/l,h,sprintf('%.1f %%',ii/l*100))
+    
+    if ~getappdata(h,'canceling')
+        handles.Results.DynFidelity.sfs = sfs;
+        handles.Results.DynFidelity.mnts = mt2star;
+        handles.Results.DynFidelity.tsnr = tsnr;
+        handles.Results.DynFidelity.st2star = st2star;
+    end
+    
+    delete(h);
+    
+    
+    minmt=mean(min(handles.mnts));
+    maxmt=mean(max(handles.mnts));
+    curPos=handles.ints(:,2);
+    boldExpexcted=reverseSeq(curPos,[minmt maxmt],0);
+    mnts = handles.Results.DynFidelity.mnts;
+    
+    
+    for ii=1:l
+        for kk=1:size(handles.mask,3)
+            [cc,pp] = corrcoef(boldExpexcted,mnts(:,kk,ii));
+            r(ii,kk)=cc(2);
+            p(ii,kk)=pp(2);
+        end
+    end
+    
+    handles.Results.DynFidelity.quadCorrRs = r;
+    handles.Results.DynFidelity.quadCorrPs = p;
+    
 end
-
-if ~getappdata(h,'canceling')
-    handles.Results.DynFidelity.sfs = sfs;
-    handles.Results.DynFidelity.mnts = mt2star;
-    handles.Results.DynFidelity.tsnr = tsnr;
-    handles.Results.DynFidelity.st2star = st2star;
-end
-
-delete(h);
 
 handles = dynFidelityCorrelation(handles);
 

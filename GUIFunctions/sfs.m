@@ -16,36 +16,55 @@ if handles.SFSbut == 1
     try
         mask = handles.mask;
     end
-    
-    if ~exist('mnts','var') && ~exist('mask','var')
-        [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum);
-        x=1
-    elseif ~exist('mnts','var') && exist('mask','var')
-        [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum);
-        x=2
+    try
+        res = handles.Results.DynFidelity;
     end
     
-    handles.SFS = 100*(mean(mnts).*std(detrend(mnts)))./(mean((mean(mnts,2)))*std(detrend(mnts(:,size(mnts,2)))));
+    if exist('res','var')
+        SFS = handles.Results.DynFidelity.sfs(handles.sliceNum,:);
+        set(findobj('Tag','corrTitle'),'String','SFS vs fidelity');
+        set(findobj('Tag','corrTitle'),'Visible','On');
+        set(findobj('Tag','matAxis'),'Visible','On');
+        axes(handles.matAxis);
+        
+        quadCorrRs=handles.Results.DynFidelity.quadCorrRs(:,1:length(SFS));
+        plot(res.sfs,abs(quadCorrRs),'o')
+        xlabel('SFS')
+        ylabel('fidelity')
+        
+        set(gca,'XTickMode','auto','YTickMode','auto','XTickLabelMode','auto','YTickLabelMode','auto')
+        set(gca,'XColor',[ 1 1 1],'YColor', [ 1 1 1])
+        legend(handles.maskLegend)
+    elseif ~exist('mnts','var') && ~exist('mask','var')
+        [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum);
+        SFS = 100*(mean(mnts).*std(detrend(mnts)))./(mean((mean(mnts,2)))*std(detrend(mnts(:,size(mnts,2)))));
+    elseif ~exist('mnts','var') && exist('mask','var')
+        [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum);
+        SFS = 100*(mean(mnts).*std(detrend(mnts)))./(mean((mean(mnts,2)))*std(detrend(mnts(:,size(mnts,2)))));
+    else
+        SFS = 100*(mean(mnts).*std(detrend(mnts)))./(mean((mean(mnts,2)))*std(detrend(mnts(:,size(mnts,2)))));
+    end
     
-    set(findobj('Tag','SFSTable'),'RowName','SFS')
-    set(findobj('Tag','SFSTable'),'Visible','On','Data',cellstr(num2str(round(handles.SFS',2)))')
+    
+    set(findobj('Tag','Table'),'RowName','SFS')
+    set(findobj('Tag','Table'),'Visible','On','Data',cellstr(num2str(round(SFS',2)))')
     
     fprintf(['\nSlice: %d\n'], handles.sliceNum)
-    SFS = array2table(handles.SFS);
+    SFSt = array2table(SFS);
     
     try
-        set(findobj('Tag','SFSTable'),'ColumnName',handles.maskLegend)
-        SFS.Properties.VariableNames = handles.maskLegend
+        set(findobj('Tag','Table'),'ColumnName',handles.maskLegend)
+        SFSt.Properties.VariableNames = handles.maskLegend(1:length(SFS));
         
     catch
-        set(findobj('Tag','SFSTable'),'ColumnName','ROI')
-        SFS.Properties.VariableNames = {'ROI'}
+        set(findobj('Tag','Table'),'ColumnName','ROI')
+        SFSt.Properties.VariableNames = {'ROI'};
     end
     
     handles.mask = mask;
     handles.mnts = mnts;
     
 else
-    set(findobj('Tag','SFSTable'),'Visible','Off')
+   % set(findobj('Tag','Table'),'Visible','Off')
 end
 
