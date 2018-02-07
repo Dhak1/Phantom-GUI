@@ -5,7 +5,7 @@ function [ betasMat ] = calcT2beta( vol )
 
 sliceNum=size(vol,3);
 
-
+ 
 
 for k=1:sliceNum
     
