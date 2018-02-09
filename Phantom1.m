@@ -114,7 +114,11 @@ handles.volume = squeeze(handles.data(:,:,handles.sliceNum,:));
 axes(handles.imageAxis)
 handles.image = squeeze(handles.volume(:,:, 1));
 imshow(handles.image,[0 max(max(squeeze(handles.volume(:,:,1))))]);
-[~,scanname,~] = fileparts(fn)
+[~,scanname,~] = fileparts(fn);
+
+if isfield(handles,'Results')
+    handles=rmfield(handles,'Results');
+end
 %a = dir([cwd ,'*.csv']);
 
 if exist([cwd, scanname , '.csv'],'file')
@@ -601,11 +605,7 @@ l=length(sliceRange);
 tempFiltFlag=0;
 imgData=handles.data;
 
-try
-    res = handles.Results.DynFidelity;
-end
-
-if ~exist('res','var')
+if ~isfield(handles,'Results') 
     
     h = waitbar(0,'','Name','','CreateCancelBtn',...
         'setappdata(gcbf,''canceling'',1)');
