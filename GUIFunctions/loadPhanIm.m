@@ -18,8 +18,8 @@ else
     volume = 0;
 end
 
-if length(fn) > 20
-    fn = fn(end-20:end);
-end
+% if length(fn) > 20
+%     fn = fn(end-20:end);
+% end
 
 end

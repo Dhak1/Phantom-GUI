@@ -19,7 +19,7 @@ if handles.corr == 1
         
         fprintf(['\nSlice: %d\n'], handles.sliceNum)
         R = array2table(r,'RowNames',handles.maskLegend);
-        R.Properties.VariableNames = handles.maskLegend
+        R.Properties.VariableNames = handles.maskLegend;
         
         set(findobj('Tag','corrTitle'),'Visible','On');
         set(findobj('Tag','matAxis'),'Visible','On');
@@ -45,10 +45,10 @@ if handles.corr == 1
     
     
 else
-    set(findobj('Tag','corrTitle'),'Visible','Off');
-    set(handles.matAxis,'Visible','Off');
-    set(get(handles.matAxis,'children'),'Visible','Off');
-    colorbar(handles.matAxis,'off');
+%     set(findobj('Tag','corrTitle'),'Visible','Off');
+%     set(handles.matAxis,'Visible','Off');
+%     set(get(handles.matAxis,'children'),'Visible','Off');
+%     colorbar(handles.matAxis,'off');
     %         set(findobj('Tag','corrTable'),'Visible','Off');
 end
 

@@ -1,4 +1,4 @@
-function [innerCylinder, outerCylinder, center, radius] = gen2_get_i_cylinder_dani(image2D, radiusRange)
+function [innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(image2D, radiusRange)
 % #stg#
 % Plan to get only inner and outer cylinders
 

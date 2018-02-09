@@ -74,6 +74,7 @@ handles.trimmed = 0;
 handles.corr = 0;
 handles.tSNRbut = 0;
 handles.SFSbut = 0;
+handles.isCoordsData=0; % is there coordiantes data
 handles.mOcolors = [1 0 0; 0 1 0; 0 0 1; 1 0.5 0];%[1 0 0; 0 1 0; 0 0 1; 1 0.6 0; 1 0 1; 0 1 1; 1 1 1]; %Mask overlay colors
 set(findobj('Tag','rangeText'),'String',num2str(handles.rangeNum));% Update handles structure
 
@@ -104,51 +105,44 @@ function loadImBut_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 axes(handles.imageAxis)
 set(findobj('Tag','statusText'),'String','Loading Data...')% Update handles structure
-[handles.data, cwd, name,fn] = loadPhanIm(handles);
-handles.slices = size(handles.data,3);
-handles.sliceNum = round(handles.slices/2);
-set(findobj('Tag','sliceText'),'String',num2str(handles.sliceNum));% Update handles structure
-set(findobj('Tag','sliceSlider'),'Max',handles.slices);
-set(findobj('Tag','sliceSlider'),'Min',1);
-set(findobj('Tag','sliceSlider'), 'SliderStep', [1/handles.slices, 10/handles.slices]);
-set(findobj('Tag','sliceSlider'),'value',handles.sliceNum);
-handles.trimmed = 0;
-handles.startSlice = 1;
-handles.endSlice = handles.slices;  
+[handles.volume, cwd, name,fn] = loadPhanIm;
+handles = updatePhanIm( handles ,1);
 
-set(findobj('Tag','startSlice'),'String','1')% Update handles structure
-set(findobj('Tag','endSlice'),'String',handles.slices)% Update handles structure
-set(findobj('Tag','currentSlice'),'String',handles.sliceNum)% Update handles structure
-set(findobj('Tag','statusText'),'String','Loaded!')% Update handles structure
-set(findobj('Tag','dataName'),'String',name)% Update handles structure
-set(findobj('Tag','startTRtext'),'String',num2str(1))% Update handles structure
-set(findobj('Tag','endTRtext'),'String',num2str(size(handles.data,4)))% Update handles structure
-
-% if length(fn) > 20
-%     fn = fn(end-20:end);
-% end
 set(findobj('Tag','fileNameText'),'String',fn)% Update handles structure
 
 handles.volume = squeeze(handles.data(:,:,handles.sliceNum,:));
 axes(handles.imageAxis)
 handles.image = squeeze(handles.volume(:,:, 1));
 imshow(handles.image,[0 max(max(squeeze(handles.volume(:,:,1))))]);
-a = dir([cwd ,'*.csv']);
-handles.ints = csvread([cwd, a.name],1);
-handles.intsraw = handles.ints;
-handles.dataName = name;
-handles.startTR = 1;
-handles.endTR = size(handles.data,4);
-handles.trimState = 1;
-handles.fT = 0;
-handles.dT = 0;
-handles.corr = 0;
-handles.tSNRbut = 0;
-handles.SFSbut = 0;
-handles.mO=0;
-handles.graph = 0;
-set(findobj('Tag','filterToggle'),'Value', 0);
-set(findobj('Tag','detrendTog'),'Value', 0);
+[~,scanname,~] = fileparts(fn);
+
+if isfield(handles,'Results')
+    handles=rmfield(handles,'Results');
+end
+%a = dir([cwd ,'*.csv']);
+
+if exist([cwd, scanname , '.csv'],'file')
+    handles.isCoordsData=1;
+    handles.ints = csvread([cwd, scanname , '.csv'],1);
+    handles.intsraw = handles.ints;
+    handles.dataName = name;
+    handles.startTR = 1;
+    handles.endTR = size(handles.data,4);
+    handles.trimState = 1;
+    handles.fT = 0;
+    handles.dT = 0;
+    handles.corr = 0;
+    handles.tSNRbut = 0;
+    handles.SFSbut = 0;
+    handles.mO=0;
+    handles.graph = 0;
+    set(findobj('Tag','filterToggle'),'Value', 0);
+    set(findobj('Tag','detrendTog'),'Value', 0);
+    set(findobj('Tag','statusText'),'String','Loaded file and coordinates')% Update handles structure
+else
+    handles.isCoordsData=0;
+    set(findobj('Tag','statusText'),'String','No coordiantes data')% Update handles structure
+end
 guidata(hObject, handles);
 
 
@@ -190,6 +184,14 @@ handles.fT = 0;
 handles.dT = 0;
 set(findobj('Tag','filterToggle'),'Value', 0);
 set(findobj('Tag','detrendTog'),'Value', 0);
+guidata(hObject, handles);
+
+function convertIm_Callback(hObject, eventdata, handles)
+% this function uses dcim2nii code to convert dicom files to 4d nifti files
+directoryname = uigetdir('.','please choose directory containing dicm files');
+dicm2nii(directoryname, fullfile(directoryname , 'niiFolder'), '.nii')
+set(findobj('Tag','statusText'),'String','Files have been writen into niiFolder');
+cd(directoryname);
 guidata(hObject, handles);
 
 % --- Executes on button press in compSD.
@@ -484,6 +486,68 @@ handles = sliderHelper(handles);
 
 guidata(hObject, handles);
 
+% --- Executes on button press in generateROI.
+function generateROI_Callback(hObject, eventdata, handles)
+% hObject    handle to drawROI (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+handles.graph = 1;
+
+axes(handles.imageAxis)
+% handles.mO = 0;
+% maskOverlay(handles);
+try
+    handles = rmfield(handles, 'mask');
+end
+
+% create mask for the current slice 
+% finder center of cartridge
+image2D=handles.volume(:,:,1);
+radiiRange=[5 15];
+
+[~, ~, center, radius] = gen3_get_i_cylinder(handles.data(:,:,handles.sliceNum,1), radiiRange);
+
+% create masks and center them
+s=floor(size(image2D)/2);
+AnguarIdent=pi*0.15;
+decentering=[-0.5 -0.5];
+
+[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(image2D,4,[radius,s([2 1])],AnguarIdent);
+%% align masks to cartridge
+
+masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
+im1=zeros(size(masks));
+im2=zeros(size(masks));
+for ii=1:4
+    im=masks(:,:,ii);
+    im1(:,:,ii)=imrotate(im,handles.maskAngleDeg,'nearest','crop');
+    im2(:,:,ii)=imtranslate(im1(:,:,ii),center-[s(2) s(1)]+decentering);
+%     if CreateMapFlag
+%         im2(:,:,ii) = mask_weights.*im2(:,:,ii);
+%     end
+%   im2(:,:,ii)=im2(:,:,ii)./sum(sum(im2(:,:,ii)));
+end
+handles.mask = cat(3,im2 ,masks_oc);
+handles.graph = 1;
+numMasks = size(handles.mask,3);
+for iMask = 1:numMasks
+    handles.maskLegend{iMask} = ['Mask' num2str(iMask)];
+end
+
+%clear current mask
+handles.mO = 0;
+maskOverlay(handles);
+
+% overlay new mask
+handles.mO = 1;
+set(findobj('tag','maskOverlay'),'Value',1)
+maskOverlay(handles);
+
+handles = sliderHelper(handles);
+
+
+guidata(hObject, handles);
+
 function endSlice_Callback(hObject, eventdata, handles)
 % hObject    handle to endslice (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -535,6 +599,62 @@ function dynFidelity_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 % handles.corr = get(hObject,'Value')
 % handles = quadCorrelation(handles);
+maskAngle = handles.maskAngleDeg;
+sliceRange=handles.rangeNum;
+l=length(sliceRange);
+tempFiltFlag=0;
+imgData=handles.data;
+
+if ~isfield(handles,'Results') 
+    
+    h = waitbar(0,'','Name','','CreateCancelBtn',...
+        'setappdata(gcbf,''canceling'',1)');
+    setappdata(h,'canceling',0)
+    
+    
+    for ii=1:l
+        
+        if getappdata(h,'canceling')
+            break
+        end
+        % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
+        [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:), st2star(ii,:)] =getStatBold3(imgData(:,:,sliceRange(ii),:),maskAngle,0,3,tempFiltFlag,[-0.5 -0.5],pi*0.15);
+        waitbar(ii/l,h,sprintf('%.1f %%',ii/l*100))
+    end
+    
+    if ~getappdata(h,'canceling')
+        handles.Results.DynFidelity.sfs = sfs;
+        handles.Results.DynFidelity.mnts = mt2star;
+        handles.Results.DynFidelity.tsnr = tsnr;
+        handles.Results.DynFidelity.st2star = st2star;
+    end
+    
+    delete(h);
+    
+    
+    minmt=mean(min(handles.mnts));
+    maxmt=mean(max(handles.mnts));
+    curPos=handles.ints(:,2);
+    boldExpexcted=reverseSeq(curPos,[minmt maxmt],0);
+    mnts = handles.Results.DynFidelity.mnts;
+    
+    
+    for ii=1:l
+        for kk=1:size(handles.mask,3)
+            [cc,pp] = corrcoef(boldExpexcted,mnts(:,kk,ii));
+            r(ii,kk)=cc(2);
+            p(ii,kk)=pp(2);
+        end
+    end
+    
+    handles.Results.DynFidelity.quadCorrRs = r;
+    handles.Results.DynFidelity.quadCorrPs = p;
+    
+end
+
+handles = dynFidelityCorrelation(handles);
+
+handles = sliderHelper(handles);
 guidata(hObject, handles);
 
 % --- Executes on slider movement.
@@ -601,6 +721,7 @@ set(findobj('Tag','IntTog'),'Value', 0);
 handles.show = 0;
 handles.graph = 0;
 guidata(hObject,handles);
+
 
 function startTRtext_Callback(hObject, eventdata, handles)
 % hObject    handle to startTRtext (see GCBO)
@@ -923,10 +1044,19 @@ if sizeTEs(1,2) == T2VolSize(1,4)
     curSlice = str2num(handles.currentSlice.String);
     
     %[angDeg,t2star_s,center,radius] = registerSpokesT2s( T2Map , curSlice);
+    
+    %% caculate angle correction factor
+    resetVal=85;
+    da=(resetVal - 64)*360/512;
+
+    
     [t2star_s,cross_mask,angDeg] = registerSpokesT2s( T2Map , curSlice);
     handles.T2Map = t2star_s;
     handles.volume = t2star_s;
-    handles.crossAngleDeg=angDeg;
+    
+    
+    handles.maskAngleDeg=angDeg+45-da;
+
     handles.mask=cross_mask;
     handles.mO=1;
    [handles] = updatePhanIm( handles,0);

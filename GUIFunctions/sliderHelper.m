@@ -13,12 +13,16 @@ show = handles.show;
 % y = handles.coor(2);
 try
     mask = handles.mask;
+    dynFidelityRes=handles.Results.DynFidelity;
 end
 
 % Here, if ive selected a ts to observe, I want to be able to move the
 % slider and see the ts over slices.
-if ~exist('mask','var')
-    [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum);
+if ~exist('mask','var') || ~handles.isCoordsData 
+    mnts=0;
+    % [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum);
+elseif exist('dynFidelityRes','var')
+    mnts=handles.Results.DynFidelity.mnts(:,:,handles.sliceNum);
 else
     [mnts, mask] = tsClick2(handles, handles.sliceNum, handles.rangeNum,mask);
 end
@@ -54,9 +58,9 @@ if length(mnts)>1
     % title(['Coordinates X: ', num2str(handles.coor(1)), ' Y: ' , num2str(handles.coor(2))])
     handles.mnts = mnts;
     handles.mask = mask;
-    handles = quadCorrelation(handles);
-    handles = tSNR(handles);
-    handles = sfs(handles);
+%     handles = quadCorrelation(handles);
+%     handles = tSNR(handles);
+%     handles = sfs(handles);
     handles = showIntHelper(handles);
 else
     axes(handles.graphAxis);cla;
