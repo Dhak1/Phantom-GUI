@@ -34,7 +34,7 @@ if exist('res','var')
         ylabel('Fidelity')
         set(gca,'XTickMode','auto','YTickMode','auto','XTickLabelMode','auto','YTickLabelMode','auto')
         set(gca,'XColor',[ 1 1 1],'YColor', [ 1 1 1])
-        legend(handles.maskLegend)
+        %legend(handles.maskLegend)
         
     catch
         fprintf('\nNo Mask Specified\n')
