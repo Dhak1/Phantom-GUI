@@ -604,7 +604,7 @@ maskAngle = handles.maskAngleDeg;
 sliceRange=handles.rangeNum;
 l=length(sliceRange);
 tempFiltFlag=0;
-imgData=handles.data;
+imgData=handles.data(:,:,:,handles.startTR:handles.endTR);
 
 if ~isfield(handles,'Results') 
     

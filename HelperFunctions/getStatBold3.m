@@ -22,8 +22,8 @@ if nargin < 6
 %     decentering=rcenter(3:4);
 end
 
-if (ifplot)
-    figure(1)
+if (ifplot==2)
+    figure(1);
     imagesc(img1);
     colormap gray;
 end
@@ -69,7 +69,7 @@ s=floor(size(img_ic)/2);
 [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent);
 masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
 
-if (ifplot)
+if (ifplot==2)
     figure(2)
     imagesc(masks_oc.*img_oc + img_ic);
     %colormap gray;
@@ -119,7 +119,7 @@ maskMat_ic=repmat(im2,1,1,1,nimg);
 maskMat_oc=repmat(masks_oc,1,1,1,nimg);
 
 
-if (ifplot)
+if (ifplot==2)
     for ii=1:4
         %ic(:,:,ii,:)=maskMat_ic(:,:,ii,:).*imgr;
         %         [i,j]=find(im2(:,:,ii));
