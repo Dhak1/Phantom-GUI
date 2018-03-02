@@ -20,7 +20,7 @@ for ii=1:l
     xline = [xstart xstart+xend];
     yline = [ystart ystart+yend];
     p = polyfit(xline,yline,1);
-    if (xline(1) - xline(2))<1e-7
+    if abs(xline(1) - xline(2))<1e-7
         yvals = linspace(yline(1),yline(2));
         xvals = xline(1)*ones(size(yvals));
        % fprintf('xline equal \n')
