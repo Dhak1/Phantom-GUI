@@ -14,7 +14,7 @@ end
 % figure; imshowpair(innerCylinder,outerCylinder) %ensure the segmentations are accurate
 
 % Get inner cylinder T2* maps
-t2star_ic = t2starmap(:,:,sliceNum,2);
+t2star_ic = t2starmap(:,:,sliceNum,end);
 t2star_ic(innerCylinder==0)=0;
 
 % Get edges (segment?)
@@ -47,9 +47,13 @@ cross_mask=spokes_registered;
 
 
 %% Threshold impossible values from T2* map (in seconds)
+if size(t2starmap,4)>1
+    t2star_s = squeeze(t2starmap(:,:,:,2));
+    t2star_s(t2star_s<0)=0;
+    t2star_s(t2star_s>80)=0;
+else
+        t2star_s = t2starmap;
+end
 
-t2star_s = squeeze(t2starmap(:,:,:,2));
-t2star_s(t2star_s<0)=0;
-t2star_s(t2star_s>80)=0;
 end
 
