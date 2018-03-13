@@ -13,8 +13,8 @@ switch handles.currChoice
         return
 end
 
-minmt=mean(min(handles.mnts));
-maxmt=mean(max(handles.mnts));
+minmt=min(min(mnts));
+maxmt=max(max(mnts));
 curPos=handles.ints(:,2);
 boldExpexcted=reverseSeq(curPos,[minmt maxmt],0);
 showFlag = handles.show;
@@ -27,7 +27,7 @@ if showFlag == 0
    % int = (handles.ints(:,2)-64)*smnt+mmnt;
    if handles.graph == 1
        for ii=1:4
-           rr = corrcoef(boldExpexcted, handles.mnts(:,ii));
+           rr = corrcoef(boldExpexcted, mnts(:,ii));
            r(ii) = rr(2);
        end
 %         if r < 0
@@ -50,7 +50,8 @@ else
     cla;
 
     if  handles.graph == 1
-        handles.curGrap = plot(handles.mnts);
+        handles.curGrap = plot(mnts);
+        %axis tight
         try
             legend(handles.maskLegend, 'FontSize',10);
         end

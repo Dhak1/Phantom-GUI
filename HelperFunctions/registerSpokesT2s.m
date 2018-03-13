@@ -1,10 +1,16 @@
-function [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( t2starmap , sliceNum)
-%find the angle of the cartridge with 4 quadrants
-%   Detailed explanation goes here
+function [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( t2starmap , sliceNum, radii )
+%find the angle of the cartridge with 4 quadrantsr
+
+if nargin < 3
+    inrad =15;
+    outrad = 25;
+else
+    inrad = radii(1);
+    outrad = radii(2);
+end
 
 
-
-[innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(t2starmap(:,:,sliceNum,1),[15 25]);
+[innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(t2starmap(:,:,sliceNum,1),[inrad outrad]);
 % figure; imshowpair(innerCylinder,outerCylinder) %ensure the segmentations are accurate
 
 % Get inner cylinder T2* maps

@@ -125,7 +125,11 @@ if exist([cwd, scanname , '.csv'],'file')
     handles.isCoordsData=1;
     handles.intsraw = csvread([cwd, scanname , '.csv'],0);
     handles.ints = handles.intsraw(2:end,:);
-    handles.maskInitOffset=360*(handles.intsraw(1,2))/512;  
+    handles.maskInitOffset=handles.intsraw(1,2);
+    
+    handles.maskAngleDeg
+    
+    
     handles.dataName = name;
     handles.startTR = 1;
     handles.endTR = size(handles.data,4);
@@ -521,7 +525,7 @@ im1=zeros(size(masks));
 im2=zeros(size(masks));
 for ii=1:4
     im=masks(:,:,ii);
-    im1(:,:,ii)=imrotate(im,handles.maskAngleDeg+handles.maskInitOffset,'nearest','crop');
+    im1(:,:,ii)=imrotate(im,handles.maskAngleDeg,'nearest','crop');
     im2(:,:,ii)=imtranslate(im1(:,:,ii),center-[s(2) s(1)]+decentering);
 %     if CreateMapFlag
 %         im2(:,:,ii) = mask_weights.*im2(:,:,ii);
@@ -604,7 +608,7 @@ maskAngle = handles.maskAngleDeg;
 sliceRange=handles.rangeNum;
 l=length(sliceRange);
 tempFiltFlag=0;
-imgData=handles.data(:,:,:,handles.startTR:handles.endTR);
+imgData=handles.data;
 
 if ~isfield(handles,'Results') 
     
@@ -635,7 +639,7 @@ if ~isfield(handles,'Results')
     
     minmt=mean(min(handles.mnts));
     maxmt=mean(max(handles.mnts));
-    curPos=handles.ints(:,2)+64;
+    curPos=handles.ints(:,2);
     boldExpexcted=reverseSeq(curPos,[minmt maxmt],0);
     mnts = handles.Results.DynFidelity.mnts;
     

@@ -22,7 +22,7 @@ if handles.mO ==1
             set(overlayBack,'AlphaData',handles.mask(:,:,handles.sliceNum)*(.3))
         catch
             try
-                set(overlayBack,'AlphaData',handles.mask(:,:,iMask)*(.3))
+                set(overlayBack,'AlphaData',handles.mask(:,:,iMask)*(1.5))
             catch
                 set(overlayBack,'AlphaData',handles.mask(:,:)*(.3))
             end
