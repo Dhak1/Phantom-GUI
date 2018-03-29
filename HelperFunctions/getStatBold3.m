@@ -66,7 +66,7 @@ s=floor(size(img_ic)/2);
 %[masks, maskSize] = generateMasks3(img_ic,4,[radius,s],pi*80/512);
 %[masks, maskSize] = generateMasks3(img_ic,4,[radius,s],pi*0.2);
 
-[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent);
+[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.3 0.25]);
 masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
 
 if (ifplot==2)
@@ -155,9 +155,11 @@ mt2star_ic=mean(mt2star_t_ic);
 mt2star_oc=mean(mt2star_t_oc);
 %st2star_ic=std(mt2star_t_ic);
 st2star_ic=std(detrend(mt2star_t_ic));
+%st2star_ic=std(mt2star_t_ic);
 %st2star_oc=mean(st2star_t_oc_randi);
 % scale std of outter circle
 st2star_oc=std(detrend(mean(ocrNz)))*sqrt(maskSize_oc/maskSize_ic(1));
+%st2star_oc=std(mean(ocrNz))*sqrt(maskSize_oc/maskSize_ic(1));
 %st2star_oc=std(mt2star_t_oc);
 st2star = [st2star_ic st2star_oc];
 mt2star = [mt2star_t_ic mt2star_t_oc];

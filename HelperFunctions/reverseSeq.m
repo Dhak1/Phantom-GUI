@@ -1,10 +1,13 @@
-function revSeqScaled=reverseSeq(tgtPos,boldValues,deadZone)
-d=128-deadZone';
-p=tgtPos*pi/256;
-rng=[-d/2 d/2]*pi/256;
+function revSeqScaled=reverseSeq(tgtPos,boldValues,cPerCycle)
+seqDeg=tgtPos*360/cPerCycle;
 
-revSeq=abs(cos(p));%+cos(pi/4);
-revSeq=acos(revSeq)-pi/4;
+revSeq=seqDeg;
+revSeq(seqDeg>180)=seqDeg(seqDeg>180)-360;
+
+
+rng=[-27 27]; %range of mask in Deg
+
+
 revSeqScaled=interp1(rng,boldValues,revSeq,'linear');
 revSeqScaled(revSeq<rng(1))=boldValues(1);
 revSeqScaled(revSeq>rng(2))=boldValues(2);

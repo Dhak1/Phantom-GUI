@@ -1047,16 +1047,14 @@ h.delete
 %% caculate angle correction factor
 
 curSlice = str2num(handles.currentSlice.String);
-resetVal=64;
-da=(resetVal - 64)*360/512;
 radii=floor([guiRadius*0.8 guiRadius*1.2]);
 
 [t2star_s,cross_mask,angDeg] = registerSpokesT2s( handles.T2Map , curSlice, radii);
-handles.T2Map = t2star_s;
+%handles.T2Map = t2star_s;
 handles.volume = t2star_s;
 
 
-handles.maskAngleDeg=angDeg+45-da;
+handles.maskAngleDeg=angDeg+45;
 
 handles.mask=cross_mask;
 handles.mO=1;

@@ -1,4 +1,4 @@
-function [ callq,mt2star,sfs,tsnr,st2star] = findCorr( staticSlices, tgtPos, curPos,boldExpected,img,angDeg )
+function [ callq,mt2star,sfs,tsnr,st2star] = findCorr( staticSlices, curPos,img,angDeg )
 %UNTITLED9 Summary of this function goes here
 %   Detailed explanation goes here
 CreateMapFlag=0;
@@ -6,7 +6,7 @@ CreateMapFlag=0;
 %indStatic=timing(goodSlices)<1500;
 %indStatic=timing(goodSlices)<500 & timing(goodSlices) >0;
 %indStatic=timing(goodSlices)<3500;
-boldActual=reverseSeq(curPos+64,[6225 6725],0);
+boldActual=reverseSeq(curPos,[6000 7000],512*16);
 
 
 getStatBold3(img(:,:,floor(mean(staticSlices)),:),angDeg,1,3,CreateMapFlag,[-0.5 -0.5],pi*0.15);
