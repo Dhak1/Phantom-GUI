@@ -25,11 +25,6 @@ for ii=1:l
       [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:),st2star(ii,:)] =getStatBold3(img(:,:,staticSlices(ii),:),angDeg,0,3,BubbleMapFlag,[-0.5 -0.5],pi*0.15);
 end
 
-
-%%
-
-leg = {'Red','Green','Blue','Yellow'};
-
 %%
 for k=1:l
     for i=1:4
@@ -43,8 +38,14 @@ end
 
 %%
 figure(2)
+
+clf
+set(gca,'ColorOrder',[1 0 0; 0 1 0; 0 0 1; 1 1 0])
+hold all
 plot(staticSlices,abs(callq),'o-','LineWidth',2)
+leg = {'mask 1','mask 2','mask 3','mask 4'};
 legend(leg)
 title(' correlation with expected signal')
 xlabel('slice #')
 ylabel('correlation')
+hold off

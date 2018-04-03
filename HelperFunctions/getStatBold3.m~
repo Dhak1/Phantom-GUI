@@ -66,7 +66,7 @@ s=floor(size(img_ic)/2);
 %[masks, maskSize] = generateMasks3(img_ic,4,[radius,s],pi*80/512);
 %[masks, maskSize] = generateMasks3(img_ic,4,[radius,s],pi*0.2);
 
-[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.3 0.25]);
+[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.35 0.25]);
 masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
 
 if (ifplot==2)
@@ -105,15 +105,16 @@ end
 leg = {'Red','Green','Blue','Yellow'};
 nimg=size(img,4);
 %imgr=imresize(img(:,:,sliceNum,:),rfactor,'nearest');
-% filter high frequency noise
-if tempFiltFlag
-    imgm=mean(img,4);
-    imgf = filtVol(img,0.01,0.1 ) + imgm;
-    imgr=imresize(imgf(:,:,1,:),rfactor,'bicubic');
-else
-    imgr=imresize(img(:,:,1,:),rfactor,'bicubic');
-end
 
+%% filter high frequency noise
+% if tempFiltFlag
+%     imgm=mean(img,4);
+%     imgf = filtVol(img,0.01,0.1 ) + imgm;
+%     imgr=imresize(imgf(:,:,1,:),rfactor,'bicubic');
+% else
+imgr=imresize(img(:,:,1,:),rfactor,'bicubic');
+% end
+%%
 
 maskMat_ic=repmat(im2,1,1,1,nimg);
 maskMat_oc=repmat(masks_oc,1,1,1,nimg);
@@ -136,37 +137,49 @@ maskMat_oc=repmat(masks_oc,1,1,1,nimg);
 % end
 %% filter bubbles: find the areas in the mask that are invovled in the sequence, take std and mean and fliter 3 sigma
 % makes outlayers equal to mean
-maskMat_icf=maskMat_ic;
-for ii=1:4
+
+if tempFiltFlag
+    maskMat_icf=maskMat_ic;
+    for ii=1:4
+        
+        maskMat_f=maskMat_ic(:,:,ii,:);
+        
+        ind_maski=find(maskMat_f~=0);
+        im_maski=imgr(ind_maski);
+        
+        
+        
+        std_mask(ii,1)=std(im_maski);
+        mean_mask(ii,1)=mean(im_maski);
+        
+        filtered_ind = find(im_maski<(mean_mask(ii)-3*std_mask(ii)) | im_maski>(mean_mask(ii)+3*std_mask(ii)));
+        %numel(filtered_ind)
+        maskMat_f(ind_maski(filtered_ind))=0;
+        maskMat_icf(:,:,ii,:) = maskMat_f;
+        
+        %     hist(im_maski,100)
+        %     input('')
+        %     imm2=imgf(ind_maski);
+        %     hist(imm2,100)
+        %     title(mean_mask(ii))
+        %     input('')
+    end
     
-    maskMat_f=maskMat_ic(:,:,ii,:);
-
-    ind_maski=find(maskMat_f~=0);
-    im_maski=imgr(ind_maski);
- 
-
-
-    std_mask(ii,1)=std(im_maski);
-    mean_mask(ii,1)=mean(im_maski);
-   
-    filtered_ind = find(im_maski<(mean_mask(ii)-3*std_mask(ii)) | im_maski>(mean_mask(ii)+3*std_mask(ii)));
-    %numel(filtered_ind)
-    maskMat_f(ind_maski(filtered_ind))=0;
-    maskMat_icf(:,:,ii,:) = maskMat_f;
-%     hist(im_maski,100)
-%     input('')
-%     imm2=imgf(ind_maski);
-%     hist(imm2,100)
-%     title(mean_mask(ii))
-%     input('')
+    % normalize mask
+    for ii=1:4
+        for jj=1:size(maskMat_icf,4)
+            maskMat_icf(:,:,ii,jj)=maskMat_icf(:,:,ii,jj)./sum(sum(maskMat_icf(:,:,ii,jj)));
+        end
+    end
+    ic= maskMat_icf.*repmat(imgr,1,1,4,1);
+else
+    ic= maskMat_ic.*repmat(imgr,1,1,4,1);
+    
 end
 %%
 
-%ic= maskMat_ic.*repmat(imgr,1,1,4,1);
-ic= maskMat_icf.*repmat(imgr,1,1,4,1);
-oc=maskMat_oc.*imgr;
- 
 
+oc=maskMat_oc.*imgr;
 ind=(maskMat_oc~=0);
 %ocr=reshape(oc,[],nimg);
 %ocrNz=reshape(ocr(ocr~=0),[],nimg);
