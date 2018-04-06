@@ -67,9 +67,9 @@ s=floor(size(img_ic)/2);
 %[masks, maskSize] = generateMasks3(img_ic,4,[radius,s],pi*0.2);
 
 % [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.35 0.25]);
-  [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.25 0.2]);
+ % [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.25 0.2]);
 
-%[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.6 0.35]);
+[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.6 0.35]);
 masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
 
 if (ifplot==2)
