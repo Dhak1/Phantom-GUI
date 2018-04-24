@@ -1,4 +1,4 @@
-function [mt2star,sfs,tsnr,st2star, center, radius]=getStatBold3(img,angDeg,ifplot,rfactor,tempFiltFlag,decentering,AnguarIdent)
+function [mt2star,sfs,tsnr,st2star, center, radius]=getStatBold3(img,angDeg,ifplot,rfactor,BubbleFiltFlag,decentering,AnguarIdent,RadialIdent)
 
 CreateMapFlag =0;
 if nargin<5
@@ -11,11 +11,11 @@ end
 
 radii=[5 15];
 
-if nargin < 6
+if nargin < 8
     %radii=[20 40];
     AnguarIdent=pi*0.15;
     decentering=[-0.5 -0.5];
-    
+    RadialIdent = [0.6 0.35];
     %radii=[5 17];
 % else
 %     radii = rcenter(1:2);
@@ -68,8 +68,7 @@ s=floor(size(img_ic)/2);
 
 % [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.35 0.25]);
  % [masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.25 0.2]);
-
-[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,[0.6 0.35]);
+[masks,  maskSize_ic , masks_oc, maskSize_oc] = generateMasks5(img_ic,4,[radius,s([2 1])],AnguarIdent,RadialIdent);
 masks_oc=imtranslate(masks_oc,center-[s(2) s(1)]+decentering);
 
 if (ifplot==2)
@@ -141,7 +140,7 @@ maskMat_oc=repmat(masks_oc,1,1,1,nimg);
 %% filter bubbles: find the areas in the mask that are invovled in the sequence, take std and mean and fliter 3 sigma
 % makes outlayers equal to mean
 
-if tempFiltFlag
+if BubbleFiltFlag
     maskMat_icf=maskMat_ic;
     for ii=1:4
         

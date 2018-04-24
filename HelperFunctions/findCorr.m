@@ -1,4 +1,4 @@
-function [ callq,mt2star,sfs,tsnr,st2star] = findCorr( staticSlices, curPos,img,angDeg )
+function [ callq,mt2star,sfs,tsnr,st2star] = findCorr( staticSlices, curPos,img,angDeg,AnguarIdent,RadialIdent )
 %UNTITLED9 Summary of this function goes here
 %   Detailed explanation goes here
 BubbleMapFlag=0;
@@ -9,7 +9,7 @@ BubbleMapFlag=0;
 boldActual=reverseSeq(curPos,[6000 7000],512*16);
 
 
-getStatBold3(img(:,:,floor(mean(staticSlices)),:),angDeg,1,3,BubbleMapFlag,[-0.5 -0.5],pi*0.15);
+getStatBold3(img(:,:,floor(mean(staticSlices)),:),angDeg,1,3,BubbleMapFlag,[-0.5 -0.5],AnguarIdent,RadialIdent);
 
 % plot([boldExpected(:)  boldActual(:)])
 % legend('bold expected','bold actual')
@@ -22,7 +22,7 @@ getStatBold3(img(:,:,floor(mean(staticSlices)),:),angDeg,1,3,BubbleMapFlag,[-0.5
 l=length(staticSlices);
 for ii=1:l
       % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
-      [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:),st2star(ii,:)] =getStatBold3(img(:,:,staticSlices(ii),:),angDeg,0,3,BubbleMapFlag,[-0.5 -0.5],pi*0.15);
+      [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:),st2star(ii,:)] =getStatBold3(img(:,:,staticSlices(ii),:),angDeg,0,3,BubbleMapFlag,[-0.5 -0.5],AnguarIdent,RadialIdent);
 end
 
 %%

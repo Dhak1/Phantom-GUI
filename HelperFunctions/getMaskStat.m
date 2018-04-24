@@ -41,7 +41,7 @@ if (ifplot)
     figure(1);
     imagesc(img1);
     colormap gray;
-    maskOverlay_simple(im2);
+    maskOverlay_simple(im2*100);
     
     figure (2);
     leg = {'Red','Green','Blue','Yellow'};
