@@ -114,6 +114,8 @@ nimg=size(img,4);
 %     imgf = filtVol(img,0.01,0.1 ) + imgm;
 %     imgr=imresize(imgf(:,:,1,:),rfactor,'bicubic');
 % else
+
+%% resample the image
 imgr=imresize(img(:,:,1,:),rfactor,'bicubic');
 % end
 %%

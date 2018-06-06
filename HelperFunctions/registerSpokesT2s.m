@@ -1,4 +1,4 @@
-function [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( t2starmap , sliceNum, radii )
+function [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( t2starmap , sliceNum, radii ,ifplot)
 %find the angle of the cartridge with 4 quadrantsr
 
 if nargin < 3
@@ -7,6 +7,10 @@ if nargin < 3
 else
     inrad = radii(1);
     outrad = radii(2);
+end
+
+if nargin < 4
+    ifplot=0;
 end
 
 
@@ -53,6 +57,10 @@ if size(t2starmap,4)>1
     t2star_s(t2star_s>80)=0;
 else
         t2star_s = t2starmap;
+end
+
+if ifplot
+    figure(1);imshowpair(t2star_s(:,:,sliceNum),[0 80]);maskOverlay_simple(im2bw(cross_mask));
 end
 
 end

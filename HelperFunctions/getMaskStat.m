@@ -44,21 +44,26 @@ if (ifplot)
     maskOverlay_simple(im2*100);
     
     figure (2);
-    leg = {'Red','Green','Blue','Yellow'};
+    %leg = {'Red','Green','Blue','Yellow'};
+    leg = {'Q1','Q2','Q3','Q4'};
     for ii=1:4
         subplot(2,2,ii)
         [i,j]=find(im2(:,:,ii));
         k=img1(sub2ind(size(img1),i,j));
-        mt2star(ii)=mean(k);
-        st2star(ii)=std(k);
-        histogram(k)
+        mt2star(ii)=nanmean(k);
+        st2star(ii)=nanstd(k);
+        histogram(k,10)
         title([leg{ii} ' mean ' num2str(mt2star(ii))])
+         set(gca,'ColorOrder',[1 0 0; 0 1 0; 0 0 1; 1 1 0],'FontSize',20,'FontWeight','Bold')
+        xlim([40 55])
+        xlabel('T2* [msec]')
     end
+    
     
     figure(3)
     clf
     c=mt2star;
-    set(gca,'ColorOrder',[1 0 0; 0 1 0; 0 0 1; 1 1 0])
+    set(gca,'ColorOrder',[1 0 0; 0 1 0; 0 0 1; 1 1 0],'FontSize',20,'FontWeight','Bold')
     hold all
     plot(100*(c-mean(c,2))./mean(c,2),'LineWidth',2)
     leg = {'mask 1','mask 2','mask 3','mask 4'};

@@ -1,7 +1,7 @@
 function [ callq,mt2star,sfs,tsnr,st2star] = findCorr( staticSlices, curPos,img,angDeg,AnguarIdent,RadialIdent )
 %UNTITLED9 Summary of this function goes here
 %   Detailed explanation goes here
-BubbleMapFlag=0;
+BubbleMapFlag=1;
 %goodSlices=10:26;
 %indStatic=timing(goodSlices)<1500;
 %indStatic=timing(goodSlices)<500 & timing(goodSlices) >0;
@@ -23,12 +23,13 @@ l=length(staticSlices);
 for ii=1:l
       % [mt2star(:,:,ii),innerCylinder, center(:,ii), radius(:,ii)] =getMeanBold(img,staticSlices(ii),angDeg,0,3,CreateMapFlag);
       [mt2star(:,:,ii),sfs(ii,:) , tsnr(ii,:),st2star(ii,:)] =getStatBold3(img(:,:,staticSlices(ii),:),angDeg,0,3,BubbleMapFlag,[-0.5 -0.5],AnguarIdent,RadialIdent);
+      disp(l-ii)
 end
 
 %%
 for k=1:l
     for i=1:4
-        m=squeeze(mt2star(:,i,k));
+        m=squeeze(detrend(mt2star(:,i,k)));
         cc=corrcoef(m,boldActual);
         callq(k,i)=cc(2,1);
     end
