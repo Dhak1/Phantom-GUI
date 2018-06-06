@@ -1,4 +1,4 @@
-function [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( t2starmap , sliceNum, radii )
+function [t2star_s,cross_mask,angDeg,center,radius] = registerSpokesT2s( t2starmap , sliceNum, radii ,ifplot)
 %find the angle of the cartridge with 4 quadrantsr
 
 if nargin < 3
@@ -9,12 +9,16 @@ else
     outrad = radii(2);
 end
 
+if nargin < 4
+    ifplot=0;
+end
+
 
 [innerCylinder, outerCylinder, center, radius] = gen3_get_i_cylinder(t2starmap(:,:,sliceNum,1),[inrad outrad]);
 % figure; imshowpair(innerCylinder,outerCylinder) %ensure the segmentations are accurate
 
 % Get inner cylinder T2* maps
-t2star_ic = t2starmap(:,:,sliceNum,2);
+t2star_ic = t2starmap(:,:,sliceNum,end);
 t2star_ic(innerCylinder==0)=0;
 
 % Get edges (segment?)
@@ -47,9 +51,17 @@ cross_mask=spokes_registered;
 
 
 %% Threshold impossible values from T2* map (in seconds)
+if size(t2starmap,4)>1
+    t2star_s = squeeze(t2starmap(:,:,:,2));
+    t2star_s(t2star_s<0)=0;
+    t2star_s(t2star_s>80)=0;
+else
+        t2star_s = t2starmap;
+end
 
-t2star_s = squeeze(t2starmap(:,:,:,2));
-t2star_s(t2star_s<0)=0;
-t2star_s(t2star_s>80)=0;
+if ifplot
+    figure(1);imshowpair(t2star_s(:,:,sliceNum),[0 80]);maskOverlay_simple(im2bw(cross_mask));
+end
+
 end
 

@@ -996,17 +996,37 @@ function T2tool_Callback(hObject, eventdata, handles)
 %T2tool2(handles);
 
 set(findobj('Tag','statusText'),'String','Loading Data...')% Update handles structure
-[handles.T2Vol, handles.dataName, handles.fileNameText] = loadPhanIm;
+[T2Vol, handles.dataName, handles.fileNameText] = loadPhanIm;
 
-T2VolSize = size(handles.T2Vol);
-tesNum = num2str(T2VolSize(1,4));
-% if exist([fn '_map_segments.mat'])
-%     load([fn '_map_segments.mat'])
-% end
-[ betas ] = calcT2beta( handles.T2Vol );
-handles.volume = betas;
+T2VolSize = size(T2Vol);
+tesNum = size(T2Vol,4);
+
+if tesNum>1
+    
+    prompt = ['Enter a series of TEs that represent each acquisition parameter, ' tesNum ' entries are required:'];
+    TEs = inputdlg(prompt);
+    TEs = TEs{1};
+    TEs = squeeze(TEs);
+    TEs=str2num(TEs); %#ok<ST2NM>
+    sizeTEs = size(TEs);
+    
+    if sizeTEs(1,2) == T2VolSize(1,4)
+        T2Map=mapT2star(T2Vol,TEs); %#stg#
+        handles.T2Map = T2Map;
+        handles.volume = T2Map;
+    else
+        set(findobj('Tag','statusText'),'String','Incorrect number of TE values!')
+    end
+else
+    handles.T2Map = T2Vol;
+    handles.volume = T2Vol;
+    
+end
+
+% [ betas ] = calcT2beta( handles.T2Vol );
+
 [handles] = updatePhanIm( handles,1);
-
+set(findobj('Tag','statusText'),'String','loaded T2* map')
 guidata(hObject, handles);
 
 % --- Executes on button press in T2Load.
@@ -1015,59 +1035,35 @@ function T2Load_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-T2VolSize = size(handles.T2Vol);
-tesNum = num2str(T2VolSize(1,4));
-% if exist([fn '_map_segments.mat'])
-%     load([fn '_map_segments.mat'])
-% end
 
-prompt = ['Enter a series of TEs that represent each acquisition parameter, ' tesNum ' entries are required:'];
-TEs = inputdlg(prompt);
-TEs = TEs{1};
-TEs = squeeze(TEs);
-TEs=str2num(TEs); %#ok<ST2NM>
-sizeTEs = size(TEs);
-if sizeTEs(1,2) == T2VolSize(1,4)
-    
-    T2Map=mapT2star(handles.T2Vol,TEs); %#stg#
-    handles.T2Map = T2Map;
-    %     if exist([fn '_map_segments.mat'])
-    %         save([fn '_map_segments.mat'],'T2Map','TEs','-append')
-    %     else
-    %         save([fn '_map_segments.mat'],'T2Map','TEs')
-    %     end
-    
-%     prompt = {'Enter the number of quadrants expected:'};
-    %     quadrantNum = inputdlg(prompt);
-    %     quadrantNum = quadrantNum{1};
-    %     quadrantNum = squeeze(quadrantNum);
-    %     quadrantNum=str2num(quadrantNum);
-    curSlice = str2num(handles.currentSlice.String);
-    
-    %[angDeg,t2star_s,center,radius] = registerSpokesT2s( T2Map , curSlice);
-    
-    %% caculate angle correction factor
-    resetVal=85;
-    da=(resetVal - 64)*360/512;
+%% user input for center and radius
 
-    
-    [t2star_s,cross_mask,angDeg] = registerSpokesT2s( T2Map , curSlice);
-    handles.T2Map = t2star_s;
-    handles.volume = t2star_s;
-    
-    
-    handles.maskAngleDeg=angDeg+45-da;
+set(findobj('Tag','statusText'),'String','please enter phantom inner circle (bouble click to end)')
+h = imellipse(handles.imageAxis);
+vertices = wait(h);
+guiCenter=mean(vertices);
+guiRadius=mean(sqrt(sum((vertices-guiCenter).^2,2)));
+h.delete
+%% caculate angle correction factor
 
-    handles.mask=cross_mask;
-    handles.mO=1;
-   [handles] = updatePhanIm( handles,0);
-    maskOverlay(handles);
-    
-    
-    set(findobj('Tag','statusText'),'String','T2 Star Complete')
-else
-    set(findobj('Tag','statusText'),'String','Incorrect number of TE values!')
-end
+curSlice = str2num(handles.currentSlice.String);
+radii=floor([guiRadius*0.8 guiRadius*1.2]);
+
+[t2star_s,cross_mask,angDeg] = registerSpokesT2s( handles.T2Map , curSlice, radii);
+%handles.T2Map = t2star_s;
+handles.volume = t2star_s;
+
+
+handles.maskAngleDeg=angDeg+45;
+
+handles.mask=cross_mask;
+handles.mO=1;
+[handles] = updatePhanIm( handles,0);
+maskOverlay(handles);
+
+
+set(findobj('Tag','statusText'),'String','T2 Star Complete')
+
 
 guidata(hObject, handles);
 

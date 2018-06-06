@@ -71,7 +71,7 @@ else
     end
 end
 
-masks_oc=radiiMap>(c_radii(1)*1.5)^2 & radiiMap<(c_radii(1)*1.7)^2 ;
+masks_oc=radiiMap>(c_radii(1)*1.1)^2 & radiiMap<(c_radii(1)*1.15)^2 ;
 maskSize_oc=nnz(masks_oc);
 masks_ic = reshape(masks_ic, [size(image2D,1),size(image2D,2),numEdges]);
 end
